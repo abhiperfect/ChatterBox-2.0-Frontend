@@ -1,4 +1,4 @@
-export const orange = "#70a3ea";
+export const blue = "#154b95";
 export const orangeLight = "rgba(234, 112, 112,0.2)";
 
 export const grayColor = "rgba(247,247,247,1)";
