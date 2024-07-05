@@ -27,6 +27,61 @@ export const sampleUsers = [
     name: "John Boi",
     _id: "2",
   },
+  {
+    avatar: "https://www.w3schools.com/howto/img_avatar.png",
+    name: "John Doe",
+    _id: "3",
+  },
+  {
+    avatar: "https://www.w3schools.com/howto/img_avatar.png",
+    name: "John Boi",
+    _id: "4",
+  },{
+    avatar: "https://www.w3schools.com/howto/img_avatar.png",
+    name: "John Doe",
+    _id: "5",
+  },
+  {
+    avatar: "https://www.w3schools.com/howto/img_avatar.png",
+    name: "John Boi",
+    _id: "6",
+  },{
+    avatar: "https://www.w3schools.com/howto/img_avatar.png",
+    name: "John Doe",
+    _id: "7",
+  },
+  {
+    avatar: "https://www.w3schools.com/howto/img_avatar.png",
+    name: "John Boi",
+    _id: "8",
+  },{
+    avatar: "https://www.w3schools.com/howto/img_avatar.png",
+    name: "John Doe",
+    _id: "9",
+  },
+  {
+    avatar: "https://www.w3schools.com/howto/img_avatar.png",
+    name: "John Boi",
+    _id: "10",
+  },{
+    avatar: "https://www.w3schools.com/howto/img_avatar.png",
+    name: "John Doe",
+    _id: "11",
+  },
+  {
+    avatar: "https://www.w3schools.com/howto/img_avatar.png",
+    name: "John Boi",
+    _id: "12",
+  },{
+    avatar: "https://www.w3schools.com/howto/img_avatar.png",
+    name: "John Doe",
+    _id: "13",
+  },
+  {
+    avatar: "https://www.w3schools.com/howto/img_avatar.png",
+    name: "John Boi",
+    _id: "14",
+  },
 ];
 
 export const sampleNotifications = [

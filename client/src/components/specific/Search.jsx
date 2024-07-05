@@ -1,6 +1,11 @@
+/*
+
+
+NOT IN USE
+
+*/
 import React, { useState } from "react";
 import UserItem from "../shared/UserItem";
-import { TrendingUpOutlined } from "@mui/icons-material";
 import { sampleUsers } from "../../constants/sampleData";
 export default function Search() {
   const [users, setUsers] = useState(sampleUsers);
@@ -9,7 +14,8 @@ export default function Search() {
 
   const addFriendHandler = async (id) => {};
   return (
-    <div>
+    <div style={{
+    }} >
       {users.map((i) => (
         <UserItem
           user={i}

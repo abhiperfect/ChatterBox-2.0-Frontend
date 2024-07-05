@@ -7,94 +7,70 @@ import { samepleChats } from "../../constants/sampleData";
 import { useParams } from "react-router-dom";
 import Profile from "../specific/Profile";
 import { bgcolor } from "../../constants/color";
-import SearchIcon from "@mui/icons-material/Search";
-import { styled, alpha } from "@mui/material/styles";
-import InputBase from '@mui/material/InputBase';
-import Divider from '@mui/material/Divider';
-import SearchDialog from "../specific/Search";
-
-const Search = styled("div")(({ theme }) => ({
-  position: "relative",
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: alpha(theme.palette.common.white, 0.15),
-  "&:hover": {
-    backgroundColor: alpha(theme.palette.common.white, 0.25),
-  },
-  marginRight: theme.spacing(2),
-  marginLeft: 0,
-  width: "100%",
-  [theme.breakpoints.up("sm")]: {
-    marginLeft: theme.spacing(3),
-    width: "auto",
-  },
-}));
-
-const SearchIconWrapper = styled("div")(({ theme }) => ({
-  padding: theme.spacing(0, 2),
-  height: "100%",
-  position: "absolute",
-  pointerEvents: "none",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-}));
-
-const StyledInputBase = styled(InputBase)(({ theme }) => ({
-  color: "inherit",
-  "& .MuiInputBase-input": {
-    padding: theme.spacing(1, 1, 1, 0),
-    // vertical padding + font size from searchIcon
-    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-    transition: theme.transitions.create("width"),
-    width: "100%",
-    [theme.breakpoints.up("md")]: {
-      width: "20ch",
-    },
-  },
-}));
+import SimpleContainer from "../common/SimpleContainer";
+import SearchBar from "../common/SearchBar";
+import { Container } from "@mui/material";
+import { Box } from "@mui/material";
+import { sampleUsers } from "../../constants/sampleData";
+import UserItem from "../shared/UserItem";
 
 const AppLayout = (WrappedComponent) => {
   return (props) => {
     const params = useParams();
     const chatId = params.chatId;
     const [isSearch, setIsSearch] = useState(false);
-    const openSearch = () => {
-      setIsSearch((prev) => !prev);
-    };
+    const addFriendHandler = async (id) => {};
+
+    const [users, setUsers] = useState(sampleUsers);
+    const isLoadingSendFriendRequest = true;
+    const sendFriendRequest = true;
 
     return (
       <>
         <Title />
         <Header isSearch={isSearch} setIsSearch={setIsSearch} />
-        <Grid container height={"91vh"}>
+        <Grid
+          container
+          height={"91vh"}
+          style={{
+            padding: "0px",
+            margin: "0px",
+          }}
+        >
           <Grid
             item
             sm={4}
             md={3}
+            padding={"0px"}
             sx={{
               display: { xs: "none", sm: "block" },
-              padding: "2rem",
               bgcolor: "rgba(0,0,0,0.85)",
             }}
             height="100%"
             bgcolor={bgcolor}
           >
-            <Search 
-            style={{
-              marginBottom:'3rem'
-            }}
+            <Container
+              style={{
+                padding: "0px",
+              }}
             >
-              <SearchIconWrapper>
-                <SearchIcon />
-              </SearchIconWrapper>
-              <StyledInputBase
-                placeholder="Search Friend…"
-                inputProps={{ "aria-label": "search" }}
-                onClick={openSearch}
-              />
-            </Search>
-            <Divider/>
-            {isSearch ? <SearchDialog/> : <Profile />}
+              <SearchBar isSearch={isSearch} setIsSearch={setIsSearch} />
+              <SimpleContainer height="81vh" cursor="pointer">
+                {isSearch && (
+                  <Box>
+                    {users.map((i) => (
+                      <UserItem
+                        user={i}
+                        key={i._id}
+                        handler={addFriendHandler}
+                        handlerIsLoading={isLoadingSendFriendRequest}
+                      />
+                    ))}
+                  </Box>
+                )}
+                {!isSearch && <Profile />}
+              </SimpleContainer>
+            </Container>
           </Grid>
           <Grid
             item
