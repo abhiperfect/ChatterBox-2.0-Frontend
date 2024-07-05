@@ -9,7 +9,8 @@ import {
 } from "../../constants/color";
 import CloseIcon from "@mui/icons-material/Close";
 import { Input } from "@mui/material";
-
+import { useSelector, useDispatch } from "react-redux";
+import { setIsSearch } from "../../redux/reducers/misc";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -25,16 +26,13 @@ const Search = styled("div")(({ theme }) => ({
     width: "auto",
   },
 }));
-function SearchBar({
-  isSearch, setIsSearch
-}) {
+function SearchBar() {
+  const dispatch = useDispatch();
 
+  const openSearch = () => dispatch(setIsSearch(true));
 
-  const handleSearchClick = () => {
-    setIsSearch(prev => !prev);
-  };
   const closeSearchBar = () => {
-    setIsSearch(false);
+    dispatch(setIsSearch(false));
   };
 
   const handleInputChange = (event) => {
@@ -66,7 +64,7 @@ function SearchBar({
           placeholder="Find Friends..."
           fullWidth={true}
           onChange={handleInputChange}
-          onClick={handleSearchClick}
+          onClick={openSearch}
         ></Input>
         <CloseIcon onClick={closeSearchBar} sx={{ cursor: "pointer" }} />
       </Search>

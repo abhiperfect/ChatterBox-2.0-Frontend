@@ -13,13 +13,17 @@ import { Container } from "@mui/material";
 import { Box } from "@mui/material";
 import { sampleUsers } from "../../constants/sampleData";
 import UserItem from "../shared/UserItem";
+import { useSelector } from "react-redux";
 
 const AppLayout = (WrappedComponent) => {
   return (props) => {
     const params = useParams();
     const chatId = params.chatId;
-    const [isSearch, setIsSearch] = useState(false);
+   
     const addFriendHandler = async (id) => {};
+    const { isSearch } = useSelector(
+      (state) => state.misc
+    );
 
     const [users, setUsers] = useState(sampleUsers);
     const isLoadingSendFriendRequest = true;
@@ -28,7 +32,7 @@ const AppLayout = (WrappedComponent) => {
     return (
       <>
         <Title />
-        <Header isSearch={isSearch} setIsSearch={setIsSearch} />
+        <Header />
         <Grid
           container
           height={"91vh"}
@@ -54,7 +58,7 @@ const AppLayout = (WrappedComponent) => {
                 padding: "0px",
               }}
             >
-              <SearchBar isSearch={isSearch} setIsSearch={setIsSearch} />
+              <SearchBar/>
               <SimpleContainer height="81vh" cursor="pointer">
                 {isSearch && (
                   <Box>
