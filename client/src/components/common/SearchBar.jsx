@@ -26,7 +26,7 @@ const Search = styled("div")(({ theme }) => ({
     width: "auto",
   },
 }));
-function SearchBar() {
+function SearchBar({ setSearch }) {
   const dispatch = useDispatch();
 
   const openSearch = () => dispatch(setIsSearch(true));
@@ -35,21 +35,21 @@ function SearchBar() {
     dispatch(setIsSearch(false));
   };
 
-  const handleInputChange = (event) => {
-
+  const handleInputChange = async (event) => {
+    setSearch(event.target.value);
   };
 
   return (
     <AppBar
       position="static"
       sx={{
-        backgroundColor: ' #272626',
+        backgroundColor: " #272626",
         color: searchBarTextColor,
         height: "70px",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        width:'100%',
+        width: "100%",
       }}
     >
       <Search

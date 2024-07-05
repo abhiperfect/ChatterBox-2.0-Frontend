@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Header from "./Header";
 import Title from "../shared/Title";
 import { Grid } from "@mui/material";
@@ -13,21 +13,63 @@ import { Container } from "@mui/material";
 import { Box } from "@mui/material";
 import { sampleUsers } from "../../constants/sampleData";
 import UserItem from "../shared/UserItem";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { useMyChatsQuery } from "../../redux/api/api";
+import { Skeleton, Drawer } from "@mui/material";
+import { useSocket } from "../../socket";
+import DeleteChatMenu from "../dialogs/DeleteChatMenu";
+import { useErrors, useSocketEvents } from "../../hooks/hook";
+import { useLazySearchUserQuery } from "../../redux/api/api";
+
+import {
+  setIsDeleteMenu,
+  setIsMobile,
+  setSelectedDeleteChat,
+} from "../../redux/reducers/misc";
 
 const AppLayout = (WrappedComponent) => {
   return (props) => {
     const params = useParams();
     const chatId = params.chatId;
-   
-    const addFriendHandler = async (id) => {};
-    const { isSearch } = useSelector(
-      (state) => state.misc
-    );
+    const dispatch = useDispatch();
+    const socket = useSocket();
+    const deleteMenuAnchor = useRef(null);
+    
+    const [searchUser] = useLazySearchUserQuery();
+  
+    const [ search, setSearch ] = useState();
 
-    const [users, setUsers] = useState(sampleUsers);
+    const [onlineUsers, setOnlineUsers] = useState([]);
+    const { newMessagesAlert } = useSelector((state) => state.chat);
+    const { isLoading, data, isError, error, refetch } = useMyChatsQuery("");
+
+    const handleMobileClose = () => dispatch(setIsMobile(false));
+    const { isMobile } = useSelector((state) => state.misc);
+
+    const addFriendHandler = async (id) => {};
+    const { isSearch } = useSelector((state) => state.misc);
+
+    const [users, setUsers] = useState([]);
     const isLoadingSendFriendRequest = true;
     const sendFriendRequest = true;
+
+    const handleDeleteChat = (e, chatId, groupChat) => {
+      dispatch(setIsDeleteMenu(true));
+      dispatch(setSelectedDeleteChat({ chatId, groupChat }));
+      deleteMenuAnchor.current = e.currentTarget;
+    };
+
+    useEffect(() => {
+      const timeOutId = setTimeout(() => {
+        searchUser(search)
+          .then(({ data }) => setUsers(data.users))
+          .catch((e) => console.log(e));
+      }, 1000);
+  
+      return () => {
+        clearTimeout(timeOutId);
+      };
+    }, [search]);
 
     return (
       <>
@@ -58,7 +100,7 @@ const AppLayout = (WrappedComponent) => {
                 padding: "0px",
               }}
             >
-              <SearchBar/>
+              <SearchBar  setSearch={setSearch} />
               <SimpleContainer height="81vh" cursor="pointer">
                 {isSearch && (
                   <Box>
@@ -97,17 +139,24 @@ const AppLayout = (WrappedComponent) => {
             }}
             bgcolor={bgcolor}
           >
-            <ChatList
-              chats={samepleChats}
-              chatId={chatId}
-              newMessagesAlert={[
-                {
-                  chatId: "1",
-                  count: "4",
-                },
-              ]}
-              onlineUsers={["1", "2"]}
+            <DeleteChatMenu
+              dispatch={dispatch}
+              deleteMenuAnchor={deleteMenuAnchor}
             />
+            {isLoading ? (
+              <Skeleton />
+            ) : (
+              // <Drawer open={isMobile} onClose={handleMobileClose}>
+                <ChatList
+                  w="70vw"
+                  chats={data?.chats}
+                  chatId={chatId}
+                  handleDeleteChat={handleDeleteChat}
+                  newMessagesAlert={newMessagesAlert}
+                  onlineUsers={onlineUsers}
+                />
+              // </Drawer>
+            )}
           </Grid>
         </Grid>
       </>
