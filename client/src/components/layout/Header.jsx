@@ -27,6 +27,10 @@ import {
   setIsNotification,
   setIsSearch,
 } from "../../redux/reducers/misc";
+import { userNotExists } from "../../redux/reducers/auth";
+import { server } from "../../constants/config";
+import axios from "axios";
+
 
 const SearchDialog = lazy(() => import("../specific/Search"));
 const NotificationsDialog = lazy(() => import("../specific/Notifications"));
@@ -56,7 +60,19 @@ const Header = () => {
     navigate("/groups");
   };
 
-  const logoutHandler = async () => {};
+  const logoutHandler = async () => {
+    
+    try {
+      const { data } = await axios.get(`${server}/api/v1/user/logout`, {
+        withCredentials: true,
+      });
+      dispatch(userNotExists());
+      toast.success(data.message);
+    } catch (error) {
+      toast.error(error?.response?.data?.message || "Something went wrong");
+    }
+  };
+
 
   return (
     <>

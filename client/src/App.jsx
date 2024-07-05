@@ -6,6 +6,7 @@ import { useSelector, useDispatch } from "react-redux";
 import axios from "axios";
 import { server } from "./constants/config";
 import { userExists, userNotExists } from "./redux/reducers/auth";
+import { Toaster } from "react-hot-toast";
 
 const Home = lazy(() => import("./pages/Home"));
 const Login = lazy(() => import("./pages/Login"));
@@ -46,6 +47,7 @@ function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
+      <Toaster position="bottom-center" />
     </BrowserRouter>
   );
 }
