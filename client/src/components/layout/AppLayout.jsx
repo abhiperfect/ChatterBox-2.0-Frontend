@@ -5,6 +5,8 @@ import { Grid } from "@mui/material";
 import ChatList from "../specific/ChatList";
 import { samepleChats } from "../../constants/sampleData";
 import { useParams } from "react-router-dom";
+import Profile from "../specific/Profile";
+import { bgcolor } from "../../constants/color";
 
 const AppLayout = (WrappedComponent) => {
   return (props) => {
@@ -14,7 +16,8 @@ const AppLayout = (WrappedComponent) => {
       <>
         <Title />
         <Header />
-        <Grid container height={"cal(100vh - 4rem)"}>
+        <Grid container height={'91vh'}
+        >
           <Grid
             item
             sm={4}
@@ -22,8 +25,8 @@ const AppLayout = (WrappedComponent) => {
             sx={{
               display: { xs: "none", sm: "block" },
             }}
-            height={"100%"}
-            bgcolor="primary.main"
+            height="100%"
+            bgcolor={bgcolor}
           >
             <ChatList
               chats={samepleChats}
@@ -44,7 +47,7 @@ const AppLayout = (WrappedComponent) => {
             md={5}
             lg={6}
             height={"100%"}
-            bgcolor="primary.main"
+            bgcolor={bgcolor}
           >
             <WrappedComponent {...props} />
           </Grid>
@@ -58,9 +61,9 @@ const AppLayout = (WrappedComponent) => {
               padding: "2rem",
               bgcolor: "rgba(0,0,0,0.85)",
             }}
-            bgcolor="primary.main"
+            bgcolor={bgcolor}
           >
-            Third
+            <Profile/>
           </Grid>
         </Grid>
       </>

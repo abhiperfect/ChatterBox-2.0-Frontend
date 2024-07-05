@@ -8,3 +8,5 @@ export const bgGradient = "linear-gradient(0deg, rgba(34,193,195,1) 0%, rgba(45,
 
 export const purple = "rgba(75,12,192,1)";
 export const purpleLight = "rgba(75,12,192,0.2)";
+
+export const bgcolor = "primary.main";
