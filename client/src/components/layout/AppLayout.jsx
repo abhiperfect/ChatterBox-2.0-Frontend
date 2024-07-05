@@ -156,7 +156,6 @@ const AppLayout = (WrappedComponent) => {
             ) : (
               // <Drawer open={isMobile} onClose={handleMobileClose}>
                 <ChatList
-                  w="70vw"
                   chats={data?.chats}
                   chatId={chatId}
                   handleDeleteChat={handleDeleteChat}
