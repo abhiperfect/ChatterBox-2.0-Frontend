@@ -17,6 +17,7 @@
     "@mui/material": "^5.15.21",
     "@mui/styled-engine-sc": "^6.0.0-alpha.18",
     "@reduxjs/toolkit": "^2.2.6",
+    "axios": "^1.7.2",
     "formik": "^2.4.6",
     "framer-motion": "^11.2.13",
     "moment": "^2.30.1",
