@@ -25,9 +25,8 @@ const SearchDialog = lazy(() => import("../specific/Search"));
 const NotificationsDialog = lazy(() => import("../specific/Notifications"));
 const NewGroupsDialog = lazy(() => import("../specific/NewGroups"));
 
-const Header = () => {
+const Header = ({ isSearch, setIsSearch }) => {
   const navigate = useNavigate();
-  const [isSearch, setIsSearch] = useState(false);
   const [isNotification, setIsNotification] = useState(false);
   const [isNewGroup, setIsNewGroup] = useState(false);
 
@@ -86,12 +85,6 @@ const Header = () => {
             />
             <Box>
               <IconBtn
-                title={"Search"}
-                icon={<SearchIcon />}
-                onClick={openSearch}
-              />
-
-              <IconBtn
                 title={"New Group"}
                 icon={<AddIcon />}
                 onClick={openNewGroup}
@@ -118,13 +111,6 @@ const Header = () => {
           </Toolbar>
         </AppBar>
       </Box>
-
-      {isSearch && (
-        <Suspense fallback={<Backdrop open />}>
-          <SearchDialog />
-        </Suspense>
-      )}
-
       {isNotification && (
         <Suspense fallback={<Backdrop open />}>
           <NotificationsDialog />
