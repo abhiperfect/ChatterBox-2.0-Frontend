@@ -30,7 +30,7 @@ import {
 import { userNotExists } from "../../redux/reducers/auth";
 import { server } from "../../constants/config";
 import axios from "axios";
-
+import { useGetNotificationsQuery } from "../../redux/api/api";
 
 const SearchDialog = lazy(() => import("../specific/Search"));
 const NotificationsDialog = lazy(() => import("../specific/Notifications"));
@@ -38,22 +38,22 @@ const NewGroupsDialog = lazy(() => import("../specific/NewGroups"));
 
 const Header = () => {
   const navigate = useNavigate();
-  
+
   const dispatch = useDispatch();
 
   const { isSearch, isNotification, isNewGroup } = useSelector(
     (state) => state.misc
   );
-
+  const { isLoading, data, error, isError } = useGetNotificationsQuery();
+  const requestCount = data?.allRequests.length;
   const handleMobile = () => {};
-
 
   const openNewGroup = () => {
     dispatch(setIsNewGroup(true));
   };
 
   const openNotification = () => {
-    setIsNotification((prev) => !prev);
+    dispatch(setIsNotification(true));
   };
 
   const navigateToGroup = () => {
@@ -61,7 +61,6 @@ const Header = () => {
   };
 
   const logoutHandler = async () => {
-    
     try {
       const { data } = await axios.get(`${server}/api/v1/user/logout`, {
         withCredentials: true,
@@ -72,7 +71,6 @@ const Header = () => {
       toast.error(error?.response?.data?.message || "Something went wrong");
     }
   };
-
 
   return (
     <>
@@ -124,12 +122,13 @@ const Header = () => {
                 title={"Notifications"}
                 icon={<NotificationsIcon />}
                 onClick={openNotification}
+                value={requestCount}
               />
-
               <IconBtn
                 title={"Logout"}
                 icon={<LogoutIcon />}
                 onClick={logoutHandler}
+                
               />
             </Box>
           </Toolbar>
@@ -155,7 +154,7 @@ const IconBtn = ({ title, icon, onClick, value }) => {
     <Tooltip title={title}>
       <IconButton color="inherit" size="large" onClick={onClick}>
         {value ? (
-          <Badge badgeContent={value} color="error">
+          <Badge badgeContent={value} color="secondary" max={10}>
             {icon}
           </Badge>
         ) : (
