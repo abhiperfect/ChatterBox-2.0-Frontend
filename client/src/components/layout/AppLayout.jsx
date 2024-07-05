@@ -18,8 +18,9 @@ import { useMyChatsQuery } from "../../redux/api/api";
 import { Skeleton, Drawer } from "@mui/material";
 import { useSocket } from "../../socket";
 import DeleteChatMenu from "../dialogs/DeleteChatMenu";
-import { useErrors, useSocketEvents } from "../../hooks/hook";
-import { useLazySearchUserQuery } from "../../redux/api/api";
+import { useErrors, useSocketEvents, useAsyncMutation } from "../../hooks/hook";
+import { useLazySearchUserQuery, useSendFriendRequestMutation } from "../../redux/api/api";
+
 
 import {
   setIsDeleteMenu,
@@ -40,19 +41,26 @@ const AppLayout = (WrappedComponent) => {
     const [ search, setSearch ] = useState();
 
     const [onlineUsers, setOnlineUsers] = useState([]);
-    const { newMessagesAlert } = useSelector((state) => state.chat);
+    const { newMessagesAlert } = useSelector((state) => state?.chat);
+    const { user } = useSelector((state)=>(state?.auth));
+
     const { isLoading, data, isError, error, refetch } = useMyChatsQuery("");
 
     const handleMobileClose = () => dispatch(setIsMobile(false));
     const { isMobile } = useSelector((state) => state.misc);
 
-    const addFriendHandler = async (id) => {};
     const { isSearch } = useSelector((state) => state.misc);
 
     const [users, setUsers] = useState([]);
-    const isLoadingSendFriendRequest = true;
-    const sendFriendRequest = true;
 
+    const [sendFriendRequest, isLoadingSendFriendRequest] = useAsyncMutation(
+      useSendFriendRequestMutation
+    );
+
+    const addFriendHandler = async (id) => {
+      await sendFriendRequest("Sending friend request...", { userId: id });
+    };
+  
     const handleDeleteChat = (e, chatId, groupChat) => {
       dispatch(setIsDeleteMenu(true));
       dispatch(setSelectedDeleteChat({ chatId, groupChat }));
@@ -114,7 +122,7 @@ const AppLayout = (WrappedComponent) => {
                     ))}
                   </Box>
                 )}
-                {!isSearch && <Profile />}
+                {!isSearch && <Profile user={user} />}
               </SimpleContainer>
             </Container>
           </Grid>
