@@ -35,9 +35,9 @@ const AppLayout = (WrappedComponent) => {
     const dispatch = useDispatch();
     const socket = useSocket();
     const deleteMenuAnchor = useRef(null);
-    
+
     const [searchUser] = useLazySearchUserQuery();
-  
+
     const [ search, setSearch ] = useState();
 
     const [onlineUsers, setOnlineUsers] = useState([]);
@@ -45,7 +45,7 @@ const AppLayout = (WrappedComponent) => {
     const { user } = useSelector((state)=>(state?.auth));
 
     const { isLoading, data, isError, error, refetch } = useMyChatsQuery("");
-
+    const flattenedOnlineUsers = onlineUsers.flat();
     const handleMobileClose = () => dispatch(setIsMobile(false));
     const { isMobile } = useSelector((state) => state.misc);
 
@@ -60,7 +60,7 @@ const AppLayout = (WrappedComponent) => {
     const addFriendHandler = async (id) => {
       await sendFriendRequest("Sending friend request...", { userId: id });
     };
-  
+
     const handleDeleteChat = (e, chatId, groupChat) => {
       dispatch(setIsDeleteMenu(true));
       dispatch(setSelectedDeleteChat({ chatId, groupChat }));
@@ -73,7 +73,7 @@ const AppLayout = (WrappedComponent) => {
           .then(({ data }) => setUsers(data.users))
           .catch((e) => console.log(e));
       }, 1000);
-  
+
       return () => {
         clearTimeout(timeOutId);
       };

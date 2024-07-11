@@ -11,21 +11,30 @@ import FileMenu from "../components/dialogs/FileMenu";
 import MessageComponent from "../components/shared/MessageComponent";
 import { useSocket } from "../socket.jsx";
 import {
-  ALERT,
-  CHAT_JOINED,
-  CHAT_LEAVED,
   NEW_MESSAGE,
   START_TYPING,
   STOP_TYPING,
-} from "../constants/events";
+  NEW_MESSAGE_ALERT,
+  CHAT_JOINED,
+  CHAT_LEAVED,
+  NEW_REQUEST,
+  ONLINE_USERS,
+  REFETCH_CHATS,
+} from "../constants/events.js";
 import { useChatDetailsQuery, useGetMessagesQuery } from "../redux/api/api";
 import { useDispatch } from "react-redux";
-import { setIsFileMenu } from "../redux/reducers/misc";
-import { removeNewMessagesAlert } from "../redux/reducers/chat";
 import { TypingLoader } from "../components/layout/Loader";
 import { useNavigate } from "react-router-dom";
-import { server } from "../constants/config.js";
+import { useSocketEvents } from "../hooks/hook.jsx";
 import { sampleMessage } from "../constants/sampleData.js";
+import {
+  incrementNotification,
+  setNewMessagesAlert,
+  removeNewMessagesAlert,
+  setNewOnlineUsers,
+} from "../redux/reducers/chat.js";
+import { useParams } from "react-router-dom";
+
 const Chat = ({ chatId, user }) => {
   const socket = useSocket();
   const dispatch = useDispatch();
@@ -35,80 +44,53 @@ const Chat = ({ chatId, user }) => {
   const bottomRef = useRef(null);
 
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState([]);
-  const [oldMessages, setOldMessages] = useState([]);
+  const [messages, setMessages] = useState(sampleMessage);
   const [page, setPage] = useState(1);
   const [fileMenuAnchor, setFileMenuAnchor] = useState(null);
   const [IamTyping, setIamTyping] = useState(false);
   const [userTyping, setUserTyping] = useState(false);
   const typingTimeout = useRef(null);
+  const [chatID, setChatID] = useState();
+  const [onlineUsers, setOnlineUsers] = useState([]);
 
   const chatDetails = useChatDetailsQuery({ chatId }, { skip: !chatId });
   const oldMessagesChunk = useGetMessagesQuery({ chatId, page });
-
-  const errors = [
-    { isError: chatDetails.isError, error: chatDetails.error },
-    { isError: oldMessagesChunk.isError, error: oldMessagesChunk.error },
-  ];
-
   const members = chatDetails?.data?.chat?.members;
-
-  const messageOnChange = (e) => {
-    setMessage(e.target.value);
-
-    // if (!IamTyping) {
-    //   socket.emit(START_TYPING, { members, chatId });
-    //   setIamTyping(true);
-    // }
-
-    if (typingTimeout.current) clearTimeout(typingTimeout.current);
-
-    // typingTimeout.current = setTimeout(() => {
-    //   socket.emit(STOP_TYPING, { members, chatId });
-    //   setIamTyping(false);
-    // }, 2000);
-  };
-
-  const handleFileOpen = (e) => {
-    dispatch(setIsFileMenu(true));
-    setFileMenuAnchor(e.currentTarget);
-  };
 
   const submitHandler = (e) => {
     e.preventDefault();
-
     if (!message.trim()) return;
-
-    // socket.emit(NEW_MESSAGE, { chatId, members, message });
+    socket.emit(NEW_MESSAGE, { chatId, members, message });
     setMessage("");
   };
 
-  useEffect(() => {
-    // socket.emit(CHAT_JOINED, { userId: user._id, members });
-    dispatch(removeNewMessagesAlert(chatId));
+  const handleFileOpen = () => {};
 
-    return () => {
-      setMessages([]);
-      setMessage("");
-      setOldMessages([]);
-      setPage(1);
-      // socket.emit(CHAT_LEAVED, { userId: user._id, members });
-    };
-  }, [chatId]);
-
-  useEffect(() => {
-    if (bottomRef.current)
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-
-  useEffect(() => {
-    if (chatDetails.isError) navigate("/");
-  }, [chatDetails.isError]);
+  const messageOnChange = (e) => {
+    setMessage(e.target.value);
+    if (!IamTyping) {
+      socket.emit(START_TYPING, { members, chatId });
+      setIamTyping(true);
+    }
+    if (typingTimeout.current) clearTimeout(typingTimeout.current);
+    typingTimeout.current = setTimeout(() => {
+      socket.emit(STOP_TYPING, { members, chatId });
+      setIamTyping(false);
+    }, 2000);
+  };
 
   const newMessagesListener = useCallback(
     (data) => {
       if (data.chatId !== chatId) return;
       setMessages((prev) => [...prev, data.message]);
+    },
+    [chatId]
+  );
+
+  const newMessageAlertListener = useCallback(
+    (data) => {
+      if (data.chatId === chatId) return;
+      dispatch(setNewMessagesAlert(data));
     },
     [chatId]
   );
@@ -129,49 +111,52 @@ const Chat = ({ chatId, user }) => {
     [chatId]
   );
 
-  const alertListener = useCallback(
-    (data) => {
-      if (data.chatId !== chatId) return;
-      const messageForAlert = {
-        content: data.message,
-        sender: {
-          _id: "djasdhajksdhasdsadasdas",
-          name: "Admin",
-        },
-        chat: chatId,
-        createdAt: new Date().toISOString(),
-      };
-      setMessages((prev) => [...prev, messageForAlert]);
-    },
-    [chatId]
-  );
-
-  const eventHandler = {
-    [ALERT]: alertListener,
-    [NEW_MESSAGE]: newMessagesListener,
-    [START_TYPING]: startTypingListener,
-    [STOP_TYPING]: stopTypingListener,
-  };
+  const onlineUsersListener = useCallback((data) => {
+    dispatch(setNewOnlineUsers(data));
+  }, []);
 
   useEffect(() => {
-    for (const [event, handler] of Object.entries(eventHandler)) {
-      // socket.on(event, handler);
-    }
+    if (!socket) return;
+
+    socket.on(NEW_MESSAGE, newMessagesListener);
+    socket.on(NEW_MESSAGE_ALERT, newMessageAlertListener);
+    socket.on(START_TYPING, startTypingListener);
+    socket.on(STOP_TYPING, stopTypingListener);
+    socket.on(ONLINE_USERS, onlineUsersListener);
 
     return () => {
-      for (const [event, handler] of Object.entries(eventHandler)) {
-        // socket.off(event, handler);
-      }
+      socket.off(NEW_MESSAGE, newMessagesListener);
+      socket.off(NEW_MESSAGE_ALERT, newMessageAlertListener);
+      socket.off(START_TYPING, startTypingListener);
+      socket.off(STOP_TYPING, stopTypingListener);
+      socket.off(ONLINE_USERS, onlineUsersListener);
     };
-  }, [eventHandler]);
+  }, [socket, chatId]);
 
   useEffect(() => {
-    if (oldMessagesChunk.isSuccess) {
-      setOldMessages((prev) => [...oldMessagesChunk.data.messages, ...prev]);
-    }
-  }, [oldMessagesChunk.isSuccess, oldMessagesChunk.data]);
+    socket.emit(CHAT_JOINED, { userId: user._id, members });
+    dispatch(removeNewMessagesAlert(chatId));
 
-  const allMessages = [...oldMessages, ...messages];
+    return () => {
+      setMessages([]);
+      setMessage("");
+      // setOldMessages([]);
+      setPage(1);
+      socket.emit(CHAT_LEAVED, { userId: user._id, members });
+    };
+  }, [chatId]);
+
+  useEffect(() => {
+    dispatch(removeNewMessagesAlert(chatId));
+  }, [removeNewMessagesAlert, chatId]);
+
+  useEffect(() => {
+    return () => {
+      setMessages([]);
+      setMessage("");
+      setPage(1);
+    };
+  }, [chatId, setMessages]);
 
   return chatDetails.isLoading ? (
     <Skeleton />
@@ -189,7 +174,7 @@ const Chat = ({ chatId, user }) => {
           overflowY: "auto",
         }}
       >
-        {sampleMessage.map((i) => (
+        {messages?.map((i) => (
           <MessageComponent key={i._id} message={i} user={user} />
         ))}
         {userTyping && <TypingLoader />}

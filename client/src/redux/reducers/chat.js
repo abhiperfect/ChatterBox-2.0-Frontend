@@ -13,6 +13,7 @@ const initialState = {
       count: 0,
     },
   ],
+  onlineUsers : [],
 };
 
 const chatSlice = createSlice({
@@ -48,6 +49,10 @@ const chatSlice = createSlice({
         (item) => item.chatId !== action.payload
       );
     },
+    setNewOnlineUsers :( state, action) =>{
+      state.onlineUsers.length = 0;
+      state.onlineUsers.push(action.payload);
+    }
   },
 });
 
@@ -57,4 +62,5 @@ export const {
   resetNotificationCount,
   setNewMessagesAlert,
   removeNewMessagesAlert,
+  setNewOnlineUsers,
 } = chatSlice.actions;
