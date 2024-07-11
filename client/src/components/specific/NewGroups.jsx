@@ -15,7 +15,7 @@ import {
   useAvailableFriendsQuery,
   useNewGroupMutation,
 } from "../../redux/api/api";
-// import { useAsyncMutation, useErrors } from "../../hooks/hook";
+import { useAsyncMutation, useErrors } from "../../hooks/hook";
 import { setIsNewGroup } from "../../redux/reducers/misc";
 import toast from "react-hot-toast";
 
@@ -24,9 +24,9 @@ const NewGroup = () => {
   const dispatch = useDispatch();
 
   const { isError, isLoading, error, data } = useAvailableFriendsQuery();
-  // const [newGroup, isLoadingNewGroup] = useAsyncMutation(useNewGroupMutation);
-  const isLoadingNewGroup = false; 
- const [ groupName, setGroupName] = useState("");
+  const [newGroup, isLoadingNewGroup] = useAsyncMutation(useNewGroupMutation);
+  const [ groupName, setGroupName ] = useState(""); 
+
 
   const [selectedMembers, setSelectedMembers] = useState([]);
 
@@ -37,7 +37,7 @@ const NewGroup = () => {
     },
   ];
 
-  // useErrors(errors);
+  useErrors(errors);
 
   const selectMemberHandler = (id) => {
     setSelectedMembers((prev) =>
@@ -48,15 +48,15 @@ const NewGroup = () => {
   };
 
   const submitHandler = () => {
-    if (!groupName.value) return toast.error("Group name is required");
+    if (!groupName) return toast.error("Group name is required");
 
     if (selectedMembers.length < 2)
       return toast.error("Please Select Atleast 3 Members");
 
-    // newGroup("Creating New Group...", {
-    //   name: groupName.value,
-    //   members: selectedMembers,
-    // });
+    newGroup("Creating New Group...", {
+      name: groupName,
+      members: selectedMembers,
+    });
 
     closeHandler();
   };
@@ -74,8 +74,8 @@ const NewGroup = () => {
 
         <TextField
           label="Group Name"
-          value={groupName.value}
-          onChange={groupName.changeHandler}
+          value={groupName}
+          onChange={(e) => setGroupName(e.target.value)}
         />
 
         <Typography variant="body1">Members</Typography>
