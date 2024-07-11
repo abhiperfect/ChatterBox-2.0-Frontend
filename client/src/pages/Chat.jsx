@@ -17,23 +17,15 @@ import {
   NEW_MESSAGE_ALERT,
   CHAT_JOINED,
   CHAT_LEAVED,
-  NEW_REQUEST,
   ONLINE_USERS,
-  REFETCH_CHATS,
 } from "../constants/events.js";
 import { useChatDetailsQuery, useGetMessagesQuery } from "../redux/api/api";
 import { useDispatch } from "react-redux";
 import { TypingLoader } from "../components/layout/Loader";
 import { useNavigate } from "react-router-dom";
-import { useSocketEvents } from "../hooks/hook.jsx";
-import { sampleMessage } from "../constants/sampleData.js";
-import {
-  incrementNotification,
-  setNewMessagesAlert,
-  removeNewMessagesAlert,
-  setNewOnlineUsers,
-} from "../redux/reducers/chat.js";
+import { setNewMessagesAlert, removeNewMessagesAlert, setNewOnlineUsers } from "../redux/reducers/chat.js";
 import { useParams } from "react-router-dom";
+import { setIsFileMenu } from "../redux/reducers/misc.js";
 
 const Chat = ({ chatId, user }) => {
   const socket = useSocket();
@@ -44,14 +36,12 @@ const Chat = ({ chatId, user }) => {
   const bottomRef = useRef(null);
 
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState(sampleMessage);
+  const [messages, setMessages] = useState([]);
   const [page, setPage] = useState(1);
   const [fileMenuAnchor, setFileMenuAnchor] = useState(null);
   const [IamTyping, setIamTyping] = useState(false);
   const [userTyping, setUserTyping] = useState(false);
   const typingTimeout = useRef(null);
-  const [chatID, setChatID] = useState();
-  const [onlineUsers, setOnlineUsers] = useState([]);
 
   const chatDetails = useChatDetailsQuery({ chatId }, { skip: !chatId });
   const oldMessagesChunk = useGetMessagesQuery({ chatId, page });
@@ -64,7 +54,10 @@ const Chat = ({ chatId, user }) => {
     setMessage("");
   };
 
-  const handleFileOpen = () => {};
+  const handleFileOpen = (e) => {
+    dispatch(setIsFileMenu(true));
+    setFileMenuAnchor(e.currentTarget);
+  };
 
   const messageOnChange = (e) => {
     setMessage(e.target.value);
@@ -140,7 +133,6 @@ const Chat = ({ chatId, user }) => {
     return () => {
       setMessages([]);
       setMessage("");
-      // setOldMessages([]);
       setPage(1);
       socket.emit(CHAT_LEAVED, { userId: user._id, members });
     };
@@ -158,6 +150,25 @@ const Chat = ({ chatId, user }) => {
     };
   }, [chatId, setMessages]);
 
+  const allMessages = [...(oldMessagesChunk?.data?.messages || []), ...messages];
+
+ // Scroll to the bottom when new messages are added
+ useEffect(() => {
+  bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+}, [messages]);
+
+// Scroll to the bottom when chatId changes (new chat opened)
+useEffect(() => {
+  bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+}, [chatId]);
+
+// Scroll to the bottom when old messages chunk is loaded
+useEffect(() => {
+  if (page === 1) {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }
+}, [oldMessagesChunk.isLoading]);
+
   return chatDetails.isLoading ? (
     <Skeleton />
   ) : (
@@ -172,9 +183,10 @@ const Chat = ({ chatId, user }) => {
         sx={{
           overflowX: "hidden",
           overflowY: "auto",
+          position: 'relative'
         }}
       >
-        {messages?.map((i) => (
+        {allMessages.map((i) => (
           <MessageComponent key={i._id} message={i} user={user} />
         ))}
         {userTyping && <TypingLoader />}
@@ -217,7 +229,7 @@ const Chat = ({ chatId, user }) => {
               marginLeft: "1rem",
               padding: "0.5rem",
               "&:hover": {
-                bgcolor: "error.dark",
+                bgcolor: "#216ad2",
               },
             }}
           >
